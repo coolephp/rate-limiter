@@ -10,10 +10,6 @@
 
 namespace Coole\RateLimiter;
 
-class PackageSkeleton
+class RateLimiterServiceProvider
 {
-    public static function test()
-    {
-        return true;
-    }
 }
