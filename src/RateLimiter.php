@@ -26,13 +26,18 @@ class RateLimiter implements MiddlewareInterface
 
     public function __construct()
     {
-        $this->init();
+        $this->initConfig();
 
-        /**
-         * Collection.
-         */
-        $config = App::make('config')['rate-limiter'];
+        $this->rateLimiterFactory = $this->buildRateLimiterFactory(App::make('config')['rate-limiter']);
+    }
 
+    protected function initConfig()
+    {
+        App::addConfig(require __DIR__.'/../config/rate-limiter.php');
+    }
+
+    protected function buildRateLimiterFactory(Collection $config): RateLimiterFactory
+    {
         try {
             $storage = new $config['storage']();
         } catch (Throwable $e) {
@@ -41,12 +46,7 @@ class RateLimiter implements MiddlewareInterface
             $storage = new $config['storage']($cache);
         }
 
-        $this->rateLimiterFactory = new RateLimiterFactory($config->forget(['storage', 'cache_adapter'])->toArray(), $storage);
-    }
-
-    protected function init()
-    {
-        App::addConfig(require __DIR__.'/../config/rate-limiter.php');
+        return new RateLimiterFactory($config->forget(['storage', 'cache_adapter'])->toArray(), $storage);
     }
 
     /**
@@ -71,5 +71,10 @@ class RateLimiter implements MiddlewareInterface
         $response->headers->add($headers);
 
         return $response;
+    }
+
+    public function getRateLimiterFactory(): RateLimiterFactory
+    {
+        return $this->rateLimiterFactory;
     }
 }
