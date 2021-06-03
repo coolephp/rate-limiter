@@ -23,11 +23,28 @@ $ composer require coolephp/rate-limiter --prefer-dist -vvv
 
 ## 使用
 
-1. 替换 `coolephp/rate-limiter` -> `vendorName/package-name`
-2. 替换 `Coole\\RateLimiter` -> `VendorName\\PackageName`
-3. 替换 `Coole\RateLimiter` -> `VendorName\PackageName`
-4. 替换 `ityaozm@gmail.com` -> `your email`
-5. 执行 `$ composer dumpautoload`
+1. 复制 `rate-limiter/config/rate-limiter.php` 为 `coole-skeleton/config/rate-limiter.php`.
+2. 配置 `\Coole\RateLimiter\RateLimiter::class` 中间件.
+
+``` php
+<?php
+
+return [
+    /*
+     * App 名称
+     */
+    'name' => env('APP_NAME', 'Coole'),
+
+    /*
+     * 全局中间件
+     */
+    'middleware' => [
+        ...
+        \Coole\RateLimiter\RateLimiter::class
+        ...
+    ],
+];
+```
 
 ## 测试
 
