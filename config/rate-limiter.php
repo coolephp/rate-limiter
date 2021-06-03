@@ -21,6 +21,11 @@ return [
 
     'limit' => 60,
 
+    'interval' => '1 minutes',
+
+    /*
+     * Only the policy is token_bucket.
+     */
     'rate' => [
         'interval' => '1 minutes',
     ],

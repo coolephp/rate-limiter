@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Throwable;
+use Tightenco\Collect\Support\Collection;
 
 class RateLimiter implements MiddlewareInterface
 {
@@ -27,6 +28,9 @@ class RateLimiter implements MiddlewareInterface
     {
         $this->init();
 
+        /**
+         * Collection.
+         */
         $config = App::make('config')['rate-limiter'];
 
         try {
@@ -37,12 +41,7 @@ class RateLimiter implements MiddlewareInterface
             $storage = new $config['storage']($cache);
         }
 
-        $this->rateLimiterFactory = new RateLimiterFactory([
-            'id' => $config['id'],
-            'policy' => $config['policy'],
-            'limit' => $config['limit'],
-            'rate' => $config['rate'],
-        ], $storage);
+        $this->rateLimiterFactory = new RateLimiterFactory($config->forget(['storage', 'cache_adapter'])->toArray(), $storage);
     }
 
     protected function init()
