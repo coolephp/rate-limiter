@@ -11,6 +11,7 @@
 namespace Coole\RateLimiter;
 
 use Closure;
+use Guanguans\Coole\Facade\App;
 use Guanguans\Coole\Middleware\MiddlewareInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,9 +25,9 @@ class RateLimiter implements MiddlewareInterface
 
     public function __construct()
     {
-        app()->addConfig(require __DIR__.'/../config/rate-limiter.php');
+        $this->init();
 
-        $config = app('config')['rate-limiter'];
+        $config = App::make('config')['rate-limiter'];
 
         try {
             $storage = new $config['storage']();
@@ -42,6 +43,11 @@ class RateLimiter implements MiddlewareInterface
             'limit' => $config['limit'],
             'rate' => $config['rate'],
         ], $storage);
+    }
+
+    protected function init()
+    {
+        App::addConfig(require __DIR__.'/../config/rate-limiter.php');
     }
 
     /**
