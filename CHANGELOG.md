@@ -10,3 +10,4 @@ All notable changes to `coolephp/rate-limiter` will be documented in this file.
 
 * Add enable rate-limiter for 1 or multiple paths.
 * Fix init config.
+* Delete `src/RateLimiterServiceProvider.php`.
