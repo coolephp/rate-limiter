@@ -13,6 +13,7 @@ namespace Coole\RateLimiter;
 use Closure;
 use Guanguans\Coole\Facade\App;
 use Guanguans\Coole\Middleware\MiddlewareInterface;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
@@ -56,7 +57,13 @@ class RateLimiter implements MiddlewareInterface
             $storage = new $config['storage']($cache);
         }
 
-        return new RateLimiterFactory($config->forget(['storage', 'cache_adapter'])->toArray(), $storage);
+        $options = $config
+            ->filter(function ($val, $key) {
+                return ! in_array($key, ['paths', 'storage', 'cache_adapter']);
+            })
+            ->toArray();
+
+        return new RateLimiterFactory($options, $storage);
     }
 
     /**
@@ -64,6 +71,10 @@ class RateLimiter implements MiddlewareInterface
      */
     public function handle(Request $request, Closure $next)
     {
+        if (! $this->shouldRun($request)) {
+            return $next($request);
+        }
+
         $limiter = $this->rateLimiterFactory->create($request->getClientIp());
         $limit = $limiter->consume();
 
@@ -86,5 +97,43 @@ class RateLimiter implements MiddlewareInterface
     public function getRateLimiterFactory(): RateLimiterFactory
     {
         return $this->rateLimiterFactory;
+    }
+
+    protected function shouldRun(Request $request): bool
+    {
+        return $this->isMatchingPath($request);
+    }
+
+    protected function isMatchingPath(Request $request): bool
+    {
+        $paths = $this->getPathsByHost($request->getHost());
+
+        foreach ($paths as $path) {
+            if ('/' !== $path) {
+                $path = trim($path, '/');
+            }
+
+            $url = trim($request->getRequestUri(), '/');
+            if (Str::is($path, $url)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @return array|mixed
+     */
+    protected function getPathsByHost(string $host)
+    {
+        $paths = $this->config->get('paths', []);
+        if (isset($paths[$host])) {
+            return $paths[$host];
+        }
+
+        return array_filter($paths, function ($path) {
+            return is_string($path);
+        });
     }
 }

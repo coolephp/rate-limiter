@@ -13,6 +13,12 @@ use Symfony\Component\RateLimiter\Storage\CacheStorage;
 
 return [
     /*
+     * You can enable rate-limiter for 1 or multiple paths.
+     * Example: ['api/*']
+     */
+    'paths' => [],
+
+    /*
      * Unique label.
      */
     'id' => 'Coole',
