@@ -22,18 +22,28 @@ use Tightenco\Collect\Support\Collection;
 
 class RateLimiter implements MiddlewareInterface
 {
+    /**
+     * @var Collection
+     */
+    protected $config;
+
+    /**
+     * @var \Symfony\Component\RateLimiter\RateLimiterFactory
+     */
     protected $rateLimiterFactory;
 
     public function __construct()
     {
         $this->initConfig();
-
-        $this->rateLimiterFactory = $this->buildRateLimiterFactory(App::make('config')['rate-limiter']);
+        $this->config = app('config')['rate-limiter'];
+        $this->rateLimiterFactory = $this->buildRateLimiterFactory($this->config);
     }
 
     protected function initConfig()
     {
-        App::addConfig(require __DIR__.'/../config/rate-limiter.php');
+        $initConfig = require __DIR__.'/../config/rate-limiter.php';
+
+        App::addConfig(['rate-limiter' => $initConfig]);
     }
 
     protected function buildRateLimiterFactory(Collection $config): RateLimiterFactory
